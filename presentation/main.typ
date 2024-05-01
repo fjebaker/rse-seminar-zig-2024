@@ -14,7 +14,7 @@
   ]
 }
 
-#enable-handout-mode(false)
+#enable-handout-mode(true)
 
 #let zig_logo = read("./assets/zig-logo-light.svg").replace("#FFF", SECONDARY_COLOR.to-hex())
 
