@@ -14,7 +14,7 @@
   ]
 }
 
-#enable-handout-mode(true)
+#enable-handout-mode(false)
 
 #let zig_logo = read("./assets/zig-logo-light.svg").replace("#FFF", SECONDARY_COLOR.to-hex())
 
@@ -27,7 +27,10 @@
   where: "Cambridge RSE Seminar",
 )
 
-#slide(title:"Zig")[
+#slide(title:"About Me")[
+]
+
+#slide(title:"About Zig")[
   #grid(columns: (70%, 1fr),
   [
   - Created by *Andrew Kelley*
@@ -124,7 +127,9 @@
 #slide(title: "Build systems are complex")[
   To develop in *C* you need to know one of \[*autotools*, *GNU make*, *CMake*, *meson*, *ninja*, *Gradle*, *SCons*, *Shake*, *Tup*, *bazel*, *premake*, *Ceedling*, ... \]
 
+  #uncover("2-")[
   To develop in *C* you need to know #text(fill: PRIMARY_COLOR)[*a second language*].
+]
 
   #grid(columns: (50%, 1fr),
   [
@@ -132,8 +137,12 @@
   ],
   align(right)[
     #v(2em)
+    #uncover("3-")[
     Zig builds are written in Zig. \
+  ]
+    #uncover("4-")[
     Zig also compiles C/C++ code.
+  ]
   ]
 )
 
@@ -235,6 +244,8 @@ $ time zig build
   total     9.718
 ```
 #v(0.3em)
+
+#uncover("2-")[
 Making some changes
 #v(0.3em)
 
@@ -246,6 +257,7 @@ $ time zig build
   system   0.206
   total    0.201
 ```
+]
 ],
 [
   #v(1em)
@@ -315,6 +327,7 @@ if (liblzma_static) {
 }
 ```
 }
+#uncover("2-")[
 #block(text(weight: "black", raw("$ zig build --help")))
 
 ```
@@ -322,6 +335,7 @@ Project-Specific Options:
   ...
   -Dstatic=[bool]       Build and link liblzma statically
 ```
+]
 ]
 
 #slide(title: "Target specifics")[
@@ -375,10 +389,16 @@ Build *from* any target *to* any target.
 
 #slide(title: "Installing the cross-compiler toolchain")[
   Other cross compilers have tedious setup, need all sorts of gcc binaries or MSVC hell
-  1. Download and decompress (using our freshly built xz)
-  2. #text(fill: PRIMARY_COLOR, [*That's it, we're done.*])
+  #uncover("2-")[
+    1. Download and decompress (using our freshly built xz)
+  ]
+  #uncover("3-")[
+    2. #text(fill: PRIMARY_COLOR, [*That's it, we're done.*])
+  ]
   #v(-0.6em)
+  #uncover("4-")[
   #align(center, image("./assets/install-zig.png", width: 70%))
+  ]
 ]
 
 #slide(title: "Made with Zig")[
@@ -551,7 +571,8 @@ std.debug.print("Outer", .{});
 defer std.debug.print("Outer goodbye", .{});
 {
    std.debug.print("Inner", .{});
-   defer std.debug.print("Inner goodbye", .{});
+   defer std.debug.print("Inner goodbye 1", .{});
+   defer std.debug.print("Inner goodbye 2", .{});
 }
 ```
 ]
@@ -599,7 +620,7 @@ If anything goes wrong we have *cleanup*]],
 
   #v(2em)
   #align(right)[
-    Possible to have different allocators for different things.
+    Possible to have different allocators for different things or different scopes.
   ]
 ]
 
@@ -609,10 +630,10 @@ If anything goes wrong we have *cleanup*]],
   defer _ = gpa.deinit();
   const allocator = gpa.allocator();
   ```
+  Trace of the leak, and where it was allocated:
   #align(center)[
     #image("./assets/memory-leak.png", width: 80%)
   ]
-  Trace of the leak, and where it was allocated.
 ]
 
 #slide(title: "Segfaults")[
@@ -816,7 +837,25 @@ Compile time error message
 
 #slide()[
   #v(-2em)
+  #align(right, par(leading: 25pt, text(size: 90pt, weight: "black")[Optimal approaches to develop#text(fill:PRIMARY_COLOR)[ing]]))
+]
+
+#slide()[
+  #v(-2em)
   #align(right, par(leading: 25pt, text(size: 90pt, weight: "black")[Optimal approaches to develop#text(fill:PRIMARY_COLOR)[ers]]))
+]
+
+#slide()[
+  #set align(center)
+  #v(-18em)
+  #text(size: 420pt, weight: "black")[xz]
+]
+
+#slide()[
+  #v(3em)
+  #align(center)[
+    #image("./assets/struggle-maintain.png", width: 80%)
+  ]
 ]
 
 #slide()[
