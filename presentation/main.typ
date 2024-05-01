@@ -14,31 +14,51 @@
   ]
 }
 
-#enable-handout-mode(false)
+#enable-handout-mode(true)
 
 #let zig_logo = read("./assets/zig-logo-light.svg").replace("#FFF", SECONDARY_COLOR.to-hex())
 
 #title-slide(
   title: [
-    Optimal approaches in #h(4.31em)
-    #move(dy: -2em, image.decode(zig_logo, width: 60%))
+    Optimal approaches with #h(3.872em)
+    #move(dy: -2em, image.decode(zig_logo, width: 55%))
   ],
   authors: ("Fergus Baker",),
   where: "Cambridge RSE Seminar",
 )
 
 #slide(title:"Zig")[
-  - Created by Andrew Kelley, now under the Zig Software Foundation charity
-  - Systems programming language and toolchain
-  - Use case is for where software can't fail
-  - "Fix the problems with C and no more"
+  #grid(columns: (70%, 1fr),
+  [
+  - Created by *Andrew Kelley*
+  - *Zig Software Foundation* charity
+  - 501(c)(3) not-for-profit corporation
+  - *Systems programming language* and *toolchain*
+  - Use case is for where software *can't fail*
+],[
+  #move(dx: 2cm, image("./assets/andrew-kelley.jpg", width: 70%))
+])
+  #v(1em)#align(right)[
+    #quote("Fix the problems with C and no more") \
+    See more in #link("https://www.youtube.com/watch?v=Gv2I7qTux7g")[The Road to Zig 1.0 (YouTube)]
+  ]
 ]
 
-#slide(title:"Outline")[
-  Approaches learned from
+#slide(title:"Outline for this talk")[
+  #set text(size: 30pt)
+  #grid(columns: (40%, 1fr),
+  [
   - Zig the builder
   - Zig the language
-  - Zig the community
+  - Zig the project
+],
+  [
+    #move(dy: -0cm, dx: 4cm, scale(x: -100%, image("./assets/satisfaction.png", height: 75%)))
+  ])
+
+  #citation[
+    Illustration: #link("https://victorianweb.org/art/illustration/thomson/6.html")
+  ]
 ]
 
 #slide()[
@@ -54,6 +74,11 @@
   #set align(center)
   #v(-18em)
   #text(size: 420pt, weight: "black")[xz]
+]
+
+#slide()[
+  #set align(center)
+  #image("./assets/sock-puppets.png", height: 90%)
 ]
 
 #slide()[
@@ -101,9 +126,19 @@
 
   To develop in *C* you need to know #text(fill: PRIMARY_COLOR)[*a second language*].
 
-  #v(2em)
-  #align(right)[
-    Zig builds are written in Zig.
+  #grid(columns: (50%, 1fr),
+  [
+    #move(dx: 1cm, image("./assets/ancient-mariner.png", width: 60%))
+  ],
+  align(right)[
+    #v(2em)
+    Zig builds are written in Zig. \
+    Zig also compiles C/C++ code.
+  ]
+)
+
+  #citation[
+    Illustration: #link("https://victorianweb.org/art/illustration/wehnert/34.html")
   ]
 ]
 
@@ -149,6 +184,8 @@ pub fn build(b: *std.Build) !void {
   - Simple
 
   Utility functions
+
+  #move(dx: 2em, dy:3em, scale(x: -100%, image("./assets/ziggy.svg", width: 60%)))
 ]
 )
 ]
@@ -156,6 +193,7 @@ pub fn build(b: *std.Build) !void {
 #slide(title: "Linking to executables")[
 #v(1em)
 #set text(size: 20pt)
+#show "linkLibrary": text.with(weight: "black", fill: PRIMARY_COLOR)
 ```zig
 const xzexe = b.addExecutable(.{
     .name = "xz",
@@ -327,18 +365,18 @@ switch (target.result.os.tag) {
 ```
 lzma.dll  lzma.lib  lzma.pdb
 ```
+#v(2em)
+#align(right)[
+Build *from* any target *to* any target.
+]
 
 #citation[ I don't have a Windows machine so I couldn't test the binary. ]
 ]
 
-#slide()[
-/home/lilith/.zigup/cache/0.12.0/files/lib/libc/include/wasm-wasi-musl/signal.h:2:2: error: "wasm lacks signal support; to enable minimal signal emulation, compile with -D_WASI_EMULATED_SIGNAL and link with -lwasi-emulated-signal"
-]
-
 #slide(title: "Installing the cross-compiler toolchain")[
-  Other cross compilers have tedious setup, need all sorts of gcc binaries or MVSC hell
+  Other cross compilers have tedious setup, need all sorts of gcc binaries or MSVC hell
   1. Download and decompress (using our freshly built xz)
-  2. That's it, we're done.
+  2. #text(fill: PRIMARY_COLOR, [*That's it, we're done.*])
   #v(-0.6em)
   #align(center, image("./assets/install-zig.png", width: 70%))
 ]
@@ -357,6 +395,10 @@ lzma.dll  lzma.lib  lzma.pdb
 ]
 
 #slide()[
+  #v(-1.5em)
+  #grid(
+    columns:(60%, 1fr),
+  [
   - *Errors*
   - *Allocators*
   - *Comptime functions*
@@ -364,34 +406,250 @@ lzma.dll  lzma.lib  lzma.pdb
   - `test`
   - Pointers and slices
   - Packed structs
-  - Anonymous and comptime structs
+  - Struct of Arrays
+  - Anonymous structs
   - Optionals
+  - Comptime types
   - Enums
   - Async
   - Unions and tagged unions
   - Arrays and hashmaps
   - SIMD intrinsics `@Vector`
-  ...
+],[
+  #v(1.5em)
+  Focus on these today
+  #move(dx: -4cm, dy: -2.8cm, text(size: 88pt, "}"))
+
+  #image("./assets/zero.svg")
+]
+)
 ]
 
 #slide(title: "Errors are everywhere")[
-  Zig makes it easy to do the right thing with them
-  - all prongs of `switch` must be handled (side effect: changing errors is a semver breaking change -- as it should be)
-  - cleanup with `defer`
+  #align(center, image("./assets/never-do-malloc-like-this.png", width: 80%))
 
-  "Zig wraps C libraries better than C"
+  Errors need to be handled.
+  - A language should make it *easy* to handle them.
+  - Optimal: a language should make it *easier* to handle errors than to *ignore* them.
+]
 
-  Optimal approach
+#slide()[
+  #v(2em)
+  #align(right)[
+  Unsafe code is code that doesn't handle all of it's errors.
+]
+  #v(1em)
+  #align(left)[
+  *Safe code* is code that *handles all of its errors*, not code that doesn't have any errors.
+  ]
+  #move(dx: 3cm,
+    image("./assets/thackeray.jpg")
+  )
+  #citation[Illustration: #link("https://victorianweb.org/art/illustration/thackeray/cooke4.html")]
+]
+
+#slide(title: "Errors are unavoidable")[
+#set text(size: 23pt)
+```zig
+fn overwrite(sub_path: []const u8) void {
+    const f = std.fs.cwd().openFile(
+        sub_path,
+        .{ .mode = .read_write },
+    );
+    f.seekTo(0);
+    _ = f.write("Hello start");
+    f.close();
+}
+```
+
+Forced to handle `openFile` errors:
+
+#align(center)[
+#image("./assets/file-seek-error.png", width: 95%)
+]
+]
+
+#slide(title: "Catching errors")[
+#set text(size: 23pt)
+#grid(columns: (50%, 1fr),
+[
+#show "catch": it => [#box(radius: 3pt, fill: PRIMARY_COLOR, text(weight: "black", fill: TEXT_COLOR, it))]
+```zig
+const f = std.fs.cwd().openFile(
+    sub_path,
+    .{ .mode = .read_write },
+) catch |err| {
+    switch (err) {}
+};
+```
+Error sets are part of the API
+
+- Explicit sets
+```zig
+fn foo() error{OhNo,Sad}!void {
+  // ...
+}
+```
+],
+[
+  #v(2em)
+  #image("./assets/switch-cases.png")
+])
+]
+
+#slide(title: "Bubbling errors up")[
+#text(size: 23pt)[
+#show "try": it => [#box(radius: 3pt, fill: PRIMARY_COLOR, text(weight: "black", fill: TEXT_COLOR, it))]
+#show "!": it => [#box(radius: 3pt, fill: PRIMARY_COLOR, text(weight: "black", fill: TEXT_COLOR, it))]
+```zig
+fn overwrite(sub_path: []const u8) !void {
+    const f = try std.fs.cwd().openFile(
+        sub_path,
+        .{ .mode = .read_write },
+    );
+    try f.seekTo(0);
+    _ = try f.write("Hello start");
+    f.close();
+}
+```
+]
+#grid(columns:(55%, 1fr),
+[
+Let the caller handle the error
+- Bubble back to `main` and report the error to the user *with a trace*
+],[
+  #move(dx: 2cm, dy: -3cm, image("./assets/cat-tenniel.jpg", width: 80%))
+])
+#citation[Illustration: #link("https://victorianweb.org/art/illustration/tenniel/lookingglass/1.2.html")]
+]
+
+#slide(title: "Errors past main")[
+  #set align(center)
+  #v(1em)
+  #image("./assets/runtime-error.png")
+]
+
+#slide(title: "Defer")[
+#text(size: 23pt)[
+#show "defer": it => [#box(radius: 3pt, fill: PRIMARY_COLOR, text(weight: "black", fill: TEXT_COLOR, it))]
+```zig
+fn overwrite(sub_path: []const u8) !void {
+    const f = try std.fs.cwd().openFile(
+        sub_path,
+        .{ .mode = .read_write },
+    );
+    defer f.close();
+    try f.seekTo(0);
+    _ = try f.write("Hello start");
+}
+```
+]
+Initialisation and destruction are *right next to eachother*.
+#set text(size: 20pt)
+```zig
+std.debug.print("Outer", .{});
+defer std.debug.print("Outer goodbye", .{});
+{
+   std.debug.print("Inner", .{});
+   defer std.debug.print("Inner goodbye", .{});
+}
+```
+]
+
+#slide(title: "Errdefer")[
+  Caller now obtains the file handle and must close.
+#grid(columns: (60%, 1fr),
+[
+  #show "errdefer": it => [#box(radius: 3pt, fill: PRIMARY_COLOR, text(weight: "black", fill: TEXT_COLOR, it))]
+  #text(size: 22pt)[
+  ```zig
+  fn overwrite(sub_path: []const u8) !File {
+      const f = try std.fs.cwd().openFile(
+          sub_path,
+          .{ .mode = .read_write },
+      );
+      errdefer f.close();
+      try f.seekTo(0);
+      _ = try f.write("Hello start");
+      return f;
+  }
+  ```
+If anything goes wrong we have *cleanup*]],
+[#v(2cm) #image("./assets/doormouse.jpg", height: 45%)])
+#citation[
+  Illustration: #link("https://victorianweb.org/art/illustration/tenniel/alice/7.3.html")
+]
 ]
 
 #slide(title: "No hidden allocations")[
-  Standard library accepts a `std.Allocator` to do all memory allocations.
-  - Allocations can fail, Zig makes it easy to handle them with
-  - Various allocators available, custom ones simple to add
-  - Have various allocators
-  - Arena allocators for when performance is key or too many allocations to track
-    - Allocator all together, free at the same time
-  - GPA will do leak, double free, etc detection
+  Allocating functions in Zig have an interface like
+  ```zig
+  fn foo(allocator: Allocator) !void {
+      // do memory things
+  }
+  ```
+
+  Allocators are *passed* to functions.
+
+  ```zig
+  const slice = try allocator.alloc(u8, 10);
+  ```
+
+  Allocations *can fail*.
+
+  #v(2em)
+  #align(right)[
+    Possible to have different allocators for different things.
+  ]
+]
+
+#slide(title: "Memory leaks")[
+  ```zig
+  var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+  defer _ = gpa.deinit();
+  const allocator = gpa.allocator();
+  ```
+  #align(center)[
+    #image("./assets/memory-leak.png", width: 80%)
+  ]
+  Trace of the leak, and where it was allocated.
+]
+
+#slide(title: "Segfaults")[
+  Use after free:
+  #align(center)[
+    #image("./assets/segfault.png", width: 80%)
+  ]
+  Double free:
+  #align(center)[
+    #image("./assets/double-free.png", width: 80%)
+  ]
+
+]
+
+#slide(title: "Allocation patterns")[
+  ```zig
+  const slice = try allocator.alloc(u32, num);
+  defer allocator.free(slice);
+  ```
+
+  Structs may hold onto their allocator to free themselves
+
+  ```zig
+  var list = std.ArrayList(f32).init(allocator);
+  // the allocator is held by the array list
+  defer list.deinit();
+  ```
+
+  *Arena allocators* for performance and simplicity
+
+  ```zig
+  var mem = std.heap.ArenaAllocator.init(allocator);
+  defer mem.deinit();
+
+  _ = try mem.allocator().alloc(u32, 1024);
+  _ = try mem.allocator().alloc(u32, 1024);
+  ```
 ]
 
 #slide(title: [#uncover("4-")[C Metaprogramming]])[
@@ -407,8 +665,15 @@ $ gcc -Wall -Wextra -Wpedantic ./a.c && ./a.out ; echo "$?"
 0
 ```
 ]
-#align(right)[
-#uncover("5-", quote[The C preprocessor is a foot gun])
+#v(-2em)
+#uncover("5-")[
+  #align(right)[
+    #quote[The C preprocessor is a foot gun]
+  ]
+  #v(-2em)
+  #move(dx: 2em)[
+    #image("./assets/footguns.png", width: 30%)
+  ]
 ]
 
 #uncover("5-")[
@@ -421,74 +686,169 @@ $ gcc -Wall -Wextra -Wpedantic ./a.c && ./a.out ; echo "$?"
 #slide(title: "Comptime")[
 
 Execute code (explicitly) at *compile time*
-- Comptime is Zig's way of *metaprogramming*
 
+```zig
+// string literal
+const name = "Shelagh Delaney";
+
+// labeled block explicitly comptime
+const e_count = comptime label: {
+    var count: usize = 0;
+    for (name) |c| {
+        if (c == 'e') count += 1;
+    }
+    break :label count;
+};
+```
 
 ]
 
-#slide(title: "A glimpse at comptime generics")[
+#slide(title: "Runtime")[
+  #set align(center)
+  #image("./assets/shelagh-runtime.png", width: 90%)
+  #citation[
+    #link("https://godbolt.org/z/Paja3d7dE")
+  ]
+]
+
+#slide(title: "Comptime")[
+  #set align(center)
+  #image("./assets/shelagh-comptime.png", width: 90%)
+  #citation[
+    #link("https://godbolt.org/z/s7xzKqPvs")
+  ]
+]
+
+#slide(title: "A glance at generics")[
 
 Compile time execution _is_ metaprogramming:
+#set text(size: 16pt)
+#grid(columns: (40%, 1fr),
+[
 ```zig
-fn range(comptime N: usize, x: anytype) [N]@TypeOf(x) {
-    const T = @TypeOf(x);
-    switch (@typeInfo(T)) {
-        .Int => {},
-        else => @compileError("Range needs integers!"),
+const FlagInfo = struct {
+    required: bool = false,
+    name: []const u8 = "flag",
+    arg_id: u32,
+    arg_count: u32 = 0,
+};
+```
+#move(dx: 1.5cm, scale(x:-100%, image("./assets/honest-work.jpg", width: 55%)))
+],[
+```zig
+fn numArgFields(comptime T: type) usize {
+    const info = @typeInfo(T);
+    switch (info) {
+        .Struct => {},
+        else => @compileError("Must be a struct."),
     }
-    const arr: [N]T = undefined;
-    for (arr, x..) |*a, i| {
-        a.* = i;
+
+    var arg_count: usize = 0;
+    inline for (info.Struct.fields) |field| {
+        if (std.mem.startsWith(u8, field.name, "arg_")) {
+            arg_count += 1;
+        }
     }
-    return arr;
+    return arg_count;
 }
 ```
+])
+  #citation[
+    Illustration: #link("https://victorianweb.org/art/illustration/barnes/21.html")
+  ]
+]
+
+#slide()[
+#v(3em)
+#align(center)[
+#image("./assets/compiler-error.png", width: 80%)
+]
+Compile time error message
+- Reference trace
+- Information about the specific build command that triggered the error
 ]
 
 #slide()[
   #set par(leading: 20pt)
   #rect(fill: TEXT_COLOR, width: 100%, height: 85%, inset: (right: 1cm))[
   #v(5em)
-  #align(right, text(size: 110pt, weight:"black", fill: SECONDARY_COLOR)[the community])
+  #align(right, text(size: 110pt, weight:"black", fill: SECONDARY_COLOR)[the \ project])
   #move(dy: -12cm, dx: 4cm, image.decode(zig_logo, width: 50%))
+  ]
+]
+#slide(title: "Zen of Zig")[
+  #v(1em)
+  #set text(size: 22pt)
+  - Communicate intent precisely.
+  - Edge cases matter.
+  - Favor reading code over writing code.
+  - Only one obvious way to do things.
+  - *Runtime crashes are better than bugs.*
+  - *Compile errors are better than runtime crashes.*
+  - Incremental improvements.
+  - Avoid local maximums.
+  - Reduce the amount one must remember.
+  - Focus on code rather than style.
+  - *Resource allocation may fail; resource deallocation must succeed.*
+  - *Memory is a resource.*
+  - Together we serve the users.
+  ]
+
+#slide()[
+  #v(-2em)
+  #align(right, par(leading: 25pt, text(size: 90pt, weight: "black")[Optimal approaches to develop#text(fill:PRIMARY_COLOR)[ing]]))
+]
+
+#slide()[
+  #align(center)[
+    #image("./assets/lorris-cro-talk.png", width: 80%)
+    #text(size: 22pt)[Interview with Loris Cro of ZFS \ #link("https://www.youtube.com/watch?v=5_oqWE9otaE")]
+  ]
+]
+
+#slide(title: "Notable projects")[
+  #v(2em)
+  #align(center)[
+    #image.decode(read("./assets/logo-with-text-white.svg").replace("white", TEXT_COLOR.to-hex()), width: 70%)
+    #image("./assets/bun.png", width: 20%)
   ]
 ]
 
 #slide()[
-  #v(-4em)
-  #align(right, par(leading: 25pt, text(size: 90pt, weight: "black")[Optimal approaches to develop#text(fill:PRIMARY_COLOR)[ing]]))
-  what does Zig encourage you do to?
-  - keep code simple by making the right thing the easy thing
-  - allocators that monitor memory and give reports
-  - easy to generate compile time errors
-  - meta program in the same language
-  - write the build in the same language
-]
-
-#slide()[
-  #v(-4em)
+  #v(-2em)
   #align(right, par(leading: 25pt, text(size: 90pt, weight: "black")[Optimal approaches to develop#text(fill:PRIMARY_COLOR)[ers]]))
-  Zig community is full of talented people
-  - Package manager means software is now easy to share
-  - talented developers working on open source software is a net gain for the community
-  - talented developers working on proprietary software only benefits the stakeholder
-  Reading Zig blogs gave me a new approach to open source
-  - Donations and sponsorship let people build the software that they want to
-  - Go back to XZ example; would financial support have helped this developer be able to full-time work on `xz`?
-  - Maybe not but it's easy to imagine projects that could benefit enormously from donations
 ]
 
 #slide()[
-  - XZ developer couldn't accept donations because of Finnish law
-  - Sponsorship is not the complete answer to the need to support open source developers
-  - As a community, we need to ask what we can do?
+  #set align(center)
+  #v(-18em)
+  #text(size: 420pt, weight: "black")[xz]
+]
+
+#slide(title: "Programming is emotional")[
+  #align(center,
+    image("./assets/c-swearwords.jpg", height: 70%)
+  )
 ]
 
 #slide()[
-  Build and support https://softwareyoucan.love
+  #align(center)[
+    #link("https://softwareyoucan.love")[
+      #set text(size: 50pt)
+      #text("https://")#text(weight: "black", fill: TEXT_COLOR, "software")#text(weight: "black", fill: PRIMARY_COLOR, "you")#text(weight: "black", fill: TEXT_COLOR, "can")#text(".")#text(weight: "black", fill: PRIMARY_COLOR, "love")
+    ]
+  ]
+  #v(-1cm)
+  #align(center, image("./assets/sycl-vancouver.png", width: 70%))
+  #citation[
+    Banner art from #link("https://softwareyoucanlove.ca/")
+  ]
 ]
 
-#slide()[
+#slide(title: "Thanks")[
   Thanks and references slide
+
+  Ziglings
+  Zig guide
 ]
 

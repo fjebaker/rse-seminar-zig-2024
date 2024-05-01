@@ -1,7 +1,7 @@
 #import "@preview/polylux:0.3.1": *
 
 #let SECONDARY_COLOR = rgb("#f6f0e0").lighten(30%)
-#let PRIMARY_COLOR = rgb("#bf2f38")
+#let PRIMARY_COLOR = rgb("#f7a41d")
 #let TEXT_COLOR = black.lighten(13%)
 
 #let tamburlaine-theme(aspect-ratio: "4-3", body) = {
