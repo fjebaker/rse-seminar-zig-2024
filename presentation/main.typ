@@ -28,6 +28,15 @@
 )
 
 #slide(title:"About Me")[
+  #v(2em)
+  - Astrophysics Student
+  - University of Bristol
+  - I like programming languages
+  - Bread and butter is Julia
+  - Art and culture is Zig
+
+  #link("@fergus@cosroe.com") \
+  #link("https://github.com/fjebaker")
 ]
 
 #slide(title:"About Zig")[
@@ -402,7 +411,18 @@ Build *from* any target *to* any target.
 ]
 
 #slide(title: "Made with Zig")[
-  list of big projects that use Zig as buildtool
+
+  Some projects that have official `build.zig` files
+  - #link("https://github.com/ggerganov/llama.cpp")[llama.cpp]
+  - #link("https://github.com/jedisct1/libsodium")[libsodium]
+  - #link("https://github.com/raysan5/raylib")[raylib]
+  - #link("https://github.com/PCRE2Project/pcre2")[PCRE2]
+
+  Unofficial wrappers:
+  - #link("https://github.com/andrewrk/ffmpeg")[FFMPEG]
+  - #link("https://github.com/kassane/openssl-zig")[OpenSSL]
+  - #link("https://github.com/andrewrk/libz")[libz]
+  - #link("https://github.com/andrewrk/pulseaudio")[pulseaudio]
 ]
 
 #slide()[
@@ -885,9 +905,15 @@ Compile time error message
 ]
 
 #slide(title: "Thanks")[
-  Thanks and references slide
 
-  Ziglings
-  Zig guide
+  Learn more about Zig #link("https://ziglang.org/")
+  - Learn Zig by fixing little problems \ #link("https://github.com/ratfactor/ziglings")
+  #v(2em)
+  - Zig NEWS and blogs #link("https://zig.news/")
+  - Zig SHOWTIME #link("https://www.youtube.com/@ZigSHOWTIME")
+
+  #v(1fr)
+  #align(right, scale(x: -100%, image("./assets/ziggy.svg", width: 30%)))
+
 ]
 
