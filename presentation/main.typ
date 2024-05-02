@@ -912,6 +912,10 @@ Compile time error message
   - Zig NEWS and blogs #link("https://zig.news/")
   - Zig SHOWTIME #link("https://www.youtube.com/@ZigSHOWTIME")
 
+    #text(size: 18pt)[
+    Source for slides: #link("https://github.com/fjebaker/rse-seminar-zig-2024")
+  ]
+
   #v(1fr)
   #align(right, scale(x: -100%, image("./assets/ziggy.svg", width: 30%)))
 
